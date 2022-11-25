@@ -1,0 +1,105 @@
+# see https://github.com/docker/compose/issues/4513
+version: "3.6"
+services:
+  protonvpn:
+    container_name: ${APP_SVC_NAME:-whoggle}_protonvpn
+    environment:
+      # Credentials needed OR fail
+      - PROTONVPN_USERNAME=${PROTONVPN_USERNAME:?error}
+      - PROTONVPN_PASSWORD=${PROTONVPN_PASSWORD:?error}
+      - PROTONVPN_TIER=${PROTONVPN_TIER:?error}
+      # Override these where applicable
+      - PROTONVPN_CHECK_INTERVAL=${PROTONVPN_CHECK_INTERVAL:-10}
+      - PROTONVPN_FAIL_THRESHOLD=${PROTONVPN_FAIL_THRESHOLD:-3}
+      - PROTONVPN_SERVER=${PROTONVPN_SERVER:-CA} dc     
+      - PROTONVPN_EXCLUDE_CIDRS=${EXCLUDE_CIDR:-}
+      # dns managed by docker
+      - PROTONVPN_DNS_LEAK_PROTECT=0
+    # Always avoid using tag latest!
+    image: ${PROTONVPN_IMAGE:-ghcr.io/tprasadtp/protonvpn}:${PROTONVPN_VERSION:-latest}
+    restart: ${RESTART_POLICY:-unless-stopped}
+    # dns forced to Quad9
+    dns: 9.9.9.9
+    networks:
+      - web
+      - proxy
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL      
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    labels:
+    # Host name must be specified or fail
+      - traefik.http.routers.${APP_SVC_NAME:-whoggle}.rule=Host(`${HOST_NAME:?error}`, `www.${HOST_NAME:?error}`)
+      - traefik.http.routers.${APP_SVC_NAME:-whoggle}.entrypoints=websecure
+      - traefik.http.routers.${APP_SVC_NAME:-whoggle}.tls.certresolver=myresolver
+      - traefik.http.services.${APP_SVC_NAME:-whoggle}.loadbalancer.server.port=${APP_SVC_PORT:-5000}
+    # Authelia Middleware for MFA
+      - traefik.http.routers.${APP_SVC_NAME:-whoggle}.middlewares=${AUTHELIA_MIDDLEWARE:-}
+      - traefik.docker.network=web
+      - traefik.enable=${TRAEFIK_ENABLED:-true}
+    # Reconnect to fastest server every hour
+      - chadburn.enabled=${CHADBURN_ENABLED:-false}
+      - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.schedule=@hourly
+      - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.command=protonvpn connect -f
+      - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.container=${APP_SVC_NAME:-whoggle}_protonvpn
+    # Enable auto updates
+      - com.centurylinklabs.watchtower.enable=${WATCHTOWER_ENABLED:-false}
+    healthcheck:
+      test: /usr/bin/healthcheck || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      
+  whoogle-search:
+    image: ${WHOOGLE_IMAGE:-benbusby/whoogle-search}:${WHOOGLE_VERSION:-latest}
+    container_name: ${APP_SVC_NAME:-whoggle}
+    environment:
+      - WHOOGLE_CONFIG_LANGUAGE=${WHOOGLE_CONFIG_LANGUAGE:-en}
+      - WHOOGLE_CONFIG_SEARCH_LANGUAGE=${WHOOGLE_CONFIG_SEARCH_LANGUAGE:-en}
+      - WHOOGLE_CONFIG_THEME=${WHOOGLE_CONFIG_THEME:-dark}
+      - WHOOGLE_CONFIG_ALTS=${WHOOGLE_CONFIG_ALTS:-true}
+      - WHOOGLE_CONFIG_VIEW_IMAGE=${WHOOGLE_CONFIG_VIEW_IMAGE:-true}
+     # URL must be supplied or fail
+      - WHOOGLE_CONFIG_URL=${WHOOGLE_CONFIG_URL:?error}
+      - WHOOGLE_CONFIG_STYLE=${WHOOGLE_CONFIG_STYLE:-}
+      - WHOOGLE_CONFIG_DISABLE=${WHOOGLE_CONFIG_DISABLE:-1}
+      - WHOOGLE_CONFIG_COUNTRY=${WHOOGLE_CONFIG_COUNTRY:-US}
+     # No need for TOR
+      - WHOOGLE_TOR_SERVICE=0
+      - WHOOGLE_CONFIG_TOR=0
+
+    restart: ${RESTART_POLICY:-unless-stopped}
+    pids_limit: 50
+    mem_limit: 512mb
+    memswap_limit: 512mb
+    user: whoogle
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /config/:size=10M,uid=927,gid=927,mode=1700
+    labels:
+      - com.centurylinklabs.watchtower.enable=${WATCHTOWER_ENABLED:-false}
+    depends_on:
+      protonvpn:
+        condition: service_healthy
+    network_mode: service:protonvpn
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5000/search?q=`date +%A` || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 50s
+
+networks:
+  web:
+    external: true
+  proxy:
+    internal: true
+    driver_opts:
+      encrypted: "true"

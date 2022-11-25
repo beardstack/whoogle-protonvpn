@@ -2,13 +2,7 @@
 ## [Whoogle-Search](https://github.com/benbusby/whoogle-search) search proxied through [ProtonVPN Docker](https://github.com/tprasadtp/protonvpn-docker) and served through [traefik](https://github.com/traefik/traefik)
 
 
-![Authelia](https://github.com/authelia/authelia/raw/master/docs/static/images/authelia-title.png) 
-![Traefik](https://github.com/traefik/traefik/raw/master/docs/content/assets/img/traefik.logo.png) 
-![Proton](https://protonvpn.com/assets/img/protonvpn-transparent.svg "ProtonVPN") 
-![Whoogle-Search](https://github.com/benbusby/whoogle-search/raw/main/docs/banner.png "Whoogle Search") 
-![Watchtower](https://github.com/containrrr/watchtower/raw/main/logo.png "Watchtower")
-
-
+<img src="https://protonvpn.com/assets/img/protonvpn-transparent.svg" height="20%" width="20%"> <img src="https://github.com/benbusby/whoogle-search/raw/main/docs/banner.png" height="20%" width="20%"> <img src="https://github.com/authelia/authelia/raw/master/docs/static/images/authelia-title.png" height="20%" width="20%"> <img src="https://github.com/traefik/traefik/raw/master/docs/content/assets/img/traefik.logo.png" height="15%" width="15%"> <img src="https://github.com/containrrr/watchtower/raw/main/logo.png" height="10%" width="10%"> 
 
 ### Objectives:
 1. Defend against propaganda that could be forcibly distributed based on location

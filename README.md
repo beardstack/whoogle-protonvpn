@@ -2,8 +2,11 @@
 ## [Whoogle-Search](https://github.com/benbusby/whoogle-search) search proxied through [ProtonVPN Docker](https://github.com/tprasadtp/protonvpn-docker) and served through [traefik](https://github.com/traefik/traefik)
 
 
-![Authelia](https://github.com/authelia/authelia/raw/master/docs/static/images/authelia-title.png =200x) 
-![Traefik](https://github.com/traefik/traefik/raw/master/docs/content/assets/img/traefik.logo.png =100x) ![Proton](https://protonvpn.com/assets/img/protonvpn-transparent.svg "ProtonVPN" =200x) ![Whoogle-Search](https://github.com/benbusby/whoogle-search/raw/main/docs/banner.png "Whoogle Search" =200x) ![Watchtower](https://github.com/containrrr/watchtower/raw/main/logo.png "Watchtower" =100x)
+![Authelia](https://github.com/authelia/authelia/raw/master/docs/static/images/authelia-title.png) 
+![Traefik](https://github.com/traefik/traefik/raw/master/docs/content/assets/img/traefik.logo.png) 
+![Proton](https://protonvpn.com/assets/img/protonvpn-transparent.svg "ProtonVPN") 
+![Whoogle-Search](https://github.com/benbusby/whoogle-search/raw/main/docs/banner.png "Whoogle Search") 
+![Watchtower](https://github.com/containrrr/watchtower/raw/main/logo.png "Watchtower")
 
 
 

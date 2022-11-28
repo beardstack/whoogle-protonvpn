@@ -42,11 +42,8 @@ It also supports via labels
 | PROTONVPN_PASSWORD             | **YES**   | -                      | Neededed to establish connection to proton                                    |
 | PROTONVPN_TIER                 | **YES**   | -                      | Neededed to establish connection to proton                                    |
 | WHOOGLE_CONFIG_URL             | **YES**   | -                      | URL e.g http://example.com                                                    |
-
-
 | PROTONVPN_WATCHTOWER_ENABLED   | No        | false                  | Enable Auto update for protonvpn image                                        |
 | WHOOGLE_WATCHTOWER_ENABLED     | No        | false                  | Enable Auto update for whooglee                                               |
-
 |                                |           |                        |                                                                               |
 | TRAEFIK_ENABLED                | No        | true                   |  Enable traefik routing                                                        |
 | APP_PORT                       | No        | 5000                   |                                                                               |
@@ -54,9 +51,6 @@ It also supports via labels
 | CHADBURN_ENABLED               | No        | false                  | Enables periodically changing VPN servers                                     |
 | CHADBURN_SCHEDULE              | No        | @hourly                | How often the reconnect command will execute                                  |
 | CHADBURN_COMMAND               | No        | protonvpn connect --sc | How often the reconnect command will execute                                  | 
-
-
-
 | PROTONVPN_IMAGE                | No        | tprasadtp/protonvpn    | Build your own image bro                                                      |
 | PROTONVPN_VERSION              | No        | latest                 | YOLO                                                                          |
 | PROTONVPN_CHECK_INTERVAL       | No        | 10                     | How often the connection to Proton will be tested                             |
@@ -68,7 +62,6 @@ It also supports via labels
 | PROTONVPN_DEBUG                | No        | 0                      | Change to 1 to see get more verbose                                           |
 | PROTONVPN_RESTART_TRIES        | No        | 5                      | How many times to attempt restart                                             |
 | EXCLUDE_CIDR                   | No        | -                      | You should leave that as is                                                   |
-
 | WHOOGLE_IMAGE                  | No        | benbusby/whoogle-search|                                                                               |
 | WHOOGLE_VERSION                | No        | latest         |  YOLO                                                                                 |
 | WHOOGLE_RESTART_TRIES          | No        | 5              |  How many times to attempt restart                                                    |

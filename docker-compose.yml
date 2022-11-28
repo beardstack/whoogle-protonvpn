@@ -1,4 +1,3 @@
-# see https://github.com/docker/compose/issues/4513
 version: "3.6"
 services:
   protonvpn:
@@ -11,24 +10,29 @@ services:
       # Override these where applicable
       - PROTONVPN_CHECK_INTERVAL=${PROTONVPN_CHECK_INTERVAL:-10}
       - PROTONVPN_FAIL_THRESHOLD=${PROTONVPN_FAIL_THRESHOLD:-3}
-      - PROTONVPN_SERVER=${PROTONVPN_SERVER:-CA} dc     
+      - PROTONVPN_SERVER=${PROTONVPN_SERVER:-SECURE_CORE}
+      - PROTONVPN_IPCHECK_ENDPOINT=${PROTONVPN_IPCHECK_ENDPOINT:-https://icanhazip.com/}
       - PROTONVPN_EXCLUDE_CIDRS=${EXCLUDE_CIDR:-}
-      # dns managed by docker
-      - PROTONVPN_DNS_LEAK_PROTECT=0
+      - DEBUG=${PROTONVPN_DEBUG:-0}
+      - PROTONVPN_DNS_LEAK_PROTECT=${PROTONVPN_DNS_LEAK_PROTECT:-1}
+      - PROTONVPN_PROTOCOL=${PROTONVPN_PROTOCOL:-udp}
+
     # Always avoid using tag latest!
     image: ${PROTONVPN_IMAGE:-ghcr.io/tprasadtp/protonvpn}:${PROTONVPN_VERSION:-latest}
-    restart: ${RESTART_POLICY:-unless-stopped}
-    # dns forced to Quad9
-    dns: 9.9.9.9
+    restart: on-failure:${PROTONVPN_RESTART_TRIES:-5}
+    mem_limit: 50mb
+    memswap_limit: 100mb
     networks:
       - web
       - proxy
     security_opt:
       - no-new-privileges
     cap_drop:
-      - ALL      
+      - ALL
     cap_add:
       - NET_ADMIN
+    # Needed for ping
+      - CAP_NET_RAW
     devices:
       - /dev/net/tun:/dev/net/tun
     labels:
@@ -42,18 +46,19 @@ services:
       - traefik.docker.network=web
       - traefik.enable=${TRAEFIK_ENABLED:-true}
     # Reconnect to fastest server every hour
-      - chadburn.enabled=${CHADBURN_ENABLED:-false}
-      - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.schedule=@hourly
-      - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.command=protonvpn connect -f
+      - chadburn.enabled=${CHADBURN_ENABLED:-true}
+      - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.schedule=${CHADBURN_SCHEDULE:-@hourly}
+      - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.command=${CHADBURN_COMMAND:-protonvpn connect --sc}
       - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.container=${APP_SVC_NAME:-whoggle}_protonvpn
     # Enable auto updates
-      - com.centurylinklabs.watchtower.enable=${WATCHTOWER_ENABLED:-false}
+      - com.centurylinklabs.watchtower.enable=${PROTONVPN_WATCHTOWER_ENABLED:-true}
     healthcheck:
       test: /usr/bin/healthcheck || exit 1
       interval: 10s
       timeout: 3s
       retries: 3
-      
+      start_period: 20s
+
   whoogle-search:
     image: ${WHOOGLE_IMAGE:-benbusby/whoogle-search}:${WHOOGLE_VERSION:-latest}
     container_name: ${APP_SVC_NAME:-whoggle}
@@ -68,11 +73,10 @@ services:
       - WHOOGLE_CONFIG_STYLE=${WHOOGLE_CONFIG_STYLE:-}
       - WHOOGLE_CONFIG_DISABLE=${WHOOGLE_CONFIG_DISABLE:-1}
       - WHOOGLE_CONFIG_COUNTRY=${WHOOGLE_CONFIG_COUNTRY:-US}
-     # No need for TOR
+     # No need for TOR, it will likely lead to rate limiting issues
       - WHOOGLE_TOR_SERVICE=0
       - WHOOGLE_CONFIG_TOR=0
-
-    restart: ${RESTART_POLICY:-unless-stopped}
+    restart: on-failure:${WHOOGLE_RESTART_TRIES:-5}
     pids_limit: 50
     mem_limit: 512mb
     memswap_limit: 512mb
@@ -84,22 +88,22 @@ services:
     tmpfs:
       - /config/:size=10M,uid=927,gid=927,mode=1700
     labels:
-      - com.centurylinklabs.watchtower.enable=${WATCHTOWER_ENABLED:-false}
+      - com.centurylinklabs.watchtower.enable=${WHOOGLE_WATCHTOWER_ENABLED:-false}
+      # autoheal_vpn container
+      - autoheal_vpn=true
     depends_on:
       protonvpn:
         condition: service_healthy
     network_mode: service:protonvpn
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:5000/search?q=`date +%A` || exit 1
-      interval: 10s
-      timeout: 3s
+      test: /whoogle/healthcheck.sh || exit 1
+      interval: 15s
+      timeout: 5s
       retries: 3
-      start_period: 50s
+      start_period: 10s
 
 networks:
   web:
     external: true
   proxy:
     internal: true
-    driver_opts:
-      encrypted: "true"

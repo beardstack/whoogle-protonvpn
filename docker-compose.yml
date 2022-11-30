@@ -16,10 +16,10 @@ services:
       - DEBUG=${PROTONVPN_DEBUG:-0}
       - PROTONVPN_DNS_LEAK_PROTECT=${PROTONVPN_DNS_LEAK_PROTECT:-1}
       - PROTONVPN_PROTOCOL=${PROTONVPN_PROTOCOL:-udp}
-
+      
     # Always avoid using tag latest!
     image: ${PROTONVPN_IMAGE:-ghcr.io/tprasadtp/protonvpn}:${PROTONVPN_VERSION:-latest}
-    restart: on-failure:${PROTONVPN_RESTART_TRIES:-5}
+    restart: always
     mem_limit: 50mb
     memswap_limit: 100mb
     networks:
@@ -28,11 +28,11 @@ services:
     security_opt:
       - no-new-privileges
     cap_drop:
-      - ALL
+      - ALL      
     cap_add:
       - NET_ADMIN
     # Needed for ping
-      - CAP_NET_RAW
+      - CAP_NET_RAW 
     devices:
       - /dev/net/tun:/dev/net/tun
     labels:
@@ -47,18 +47,18 @@ services:
       - traefik.enable=${TRAEFIK_ENABLED:-true}
     # Reconnect to fastest server every hour
       - chadburn.enabled=${CHADBURN_ENABLED:-true}
-      - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.schedule=${CHADBURN_SCHEDULE:-@hourly}
-      - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.command=${CHADBURN_COMMAND:-protonvpn connect --sc}
+      - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.schedule=@hourly
+      - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.command=protonvpn connect --sc
       - chadburn.job-exec.${APP_SVC_NAME:-whoggle}_protonvpn.container=${APP_SVC_NAME:-whoggle}_protonvpn
     # Enable auto updates
-      - com.centurylinklabs.watchtower.enable=${PROTONVPN_WATCHTOWER_ENABLED:-true}
+      - com.centurylinklabs.watchtower.enable=${WATCHTOWER_ENABLED:-true}
     healthcheck:
       test: /usr/bin/healthcheck || exit 1
-      interval: 10s
+      interval: 15s
       timeout: 3s
       retries: 3
       start_period: 20s
-
+      
   whoogle-search:
     image: ${WHOOGLE_IMAGE:-benbusby/whoogle-search}:${WHOOGLE_VERSION:-latest}
     container_name: ${APP_SVC_NAME:-whoggle}
@@ -76,7 +76,8 @@ services:
      # No need for TOR, it will likely lead to rate limiting issues
       - WHOOGLE_TOR_SERVICE=0
       - WHOOGLE_CONFIG_TOR=0
-    restart: on-failure:${WHOOGLE_RESTART_TRIES:-5}
+    restart: unless-stopped
+#on-failure:${PROTONVPN_RESTART_TRIES:-5}
     pids_limit: 50
     mem_limit: 512mb
     memswap_limit: 512mb
@@ -88,19 +89,20 @@ services:
     tmpfs:
       - /config/:size=10M,uid=927,gid=927,mode=1700
     labels:
-      - com.centurylinklabs.watchtower.enable=${WHOOGLE_WATCHTOWER_ENABLED:-false}
-      # autoheal_vpn container
-      - autoheal_vpn=true
+      - com.centurylinklabs.watchtower.enable=${WATCHTOWER_ENABLED:-true}
+# autoheal sidecar container. restarts VPN & APP in case of failure, disconnection or rate-limit issues
+# https://github.com/beardstack/docker-autoheal-protonvpn     
+      - autoheal_vpn=${AUTOHEAL_VPN_ENABLE:-true}
     depends_on:
       protonvpn:
         condition: service_healthy
     network_mode: service:protonvpn
     healthcheck:
       test: /whoogle/healthcheck.sh || exit 1
-      interval: 15s
-      timeout: 5s
+      interval: 10s
+      timeout: 3s
       retries: 3
-      start_period: 10s
+      start_period: 30s
 
 networks:
   web:

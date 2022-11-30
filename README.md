@@ -76,7 +76,7 @@ It also supports via labels
 | WHOOGLE_TOR_SERVICE            | No        | 0              | TOR disabled (mostly because rate limiting)                                   |
 | WHOOGLE_CONFIG_TOR             | No        | 0              | TOR disabled (mostly because rate limiting)                                   |
 |                                |           |                |                                                                               |
-
+| AUTOHEAL_VPN_ENABLE            | No        | true           | Enables monitoring by autoheal_vpn sidecar |
 
 
 

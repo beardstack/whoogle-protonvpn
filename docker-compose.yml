@@ -77,7 +77,6 @@ services:
       - WHOOGLE_TOR_SERVICE=0
       - WHOOGLE_CONFIG_TOR=0
     restart: unless-stopped
-#on-failure:${PROTONVPN_RESTART_TRIES:-5}
     pids_limit: 50
     mem_limit: 512mb
     memswap_limit: 512mb

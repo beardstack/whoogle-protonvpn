@@ -1,6 +1,6 @@
 
 
-## [Whoogle-Search](https://github.com/benbusby/whoogle-search) search proxied through [ProtonVPN Docker](https://github.com/tprasadtp/protonvpn-docker) and served through [traefik](https://github.com/traefik/traefik)
+## Docker-Compose stack [Whoogle-Search](https://github.com/benbusby/whoogle-search) search proxied through [ProtonVPN Docker](https://github.com/tprasadtp/protonvpn-docker) and served through [traefik](https://github.com/traefik/traefik)
 
 
 <img src="https://protonvpn.com/assets/img/protonvpn-transparent.svg" height="20%" width="20%"> <img src="https://github.com/benbusby/whoogle-search/raw/main/docs/banner.png" height="20%" width="20%"> <img src="https://github.com/authelia/authelia/raw/master/docs/static/images/authelia-title.png" height="20%" width="20%"> <img src="https://github.com/traefik/traefik/raw/master/docs/content/assets/img/traefik.logo.png" height="15%" width="15%"> <img src="https://github.com/containrrr/watchtower/raw/main/logo.png" height="10%" width="10%"> 
@@ -76,7 +76,7 @@ It also supports via labels
 | WHOOGLE_TOR_SERVICE            | No        | 0              | TOR disabled (mostly because rate limiting)                                   |
 | WHOOGLE_CONFIG_TOR             | No        | 0              | TOR disabled (mostly because rate limiting)                                   |
 |                                |           |                |                                                                               |
-| AUTOHEAL_VPN_ENABLE            | No        | true           | Enables monitoring by autoheal_vpn sidecar |
+| AUTOHEAL_VPN_ENABLE            | No        | true           | Enables monitoring by autoheal_vpn sidecar More [info](https://github.com/beardstack/docker-autoheal-protonvpn)|
 
 
 
